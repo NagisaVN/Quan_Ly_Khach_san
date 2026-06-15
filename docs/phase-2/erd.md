@@ -1,8 +1,9 @@
-# ERD — Hotel Management System (Phase 2)
+# Entity-Relationship Diagram (ERD) — Hotel Management System (Phase 2)
 
-**Phiên bản:** 1.0 | **Tổng số bảng nghiệp vụ:** ~50
+**Phiên bản:** 2.0 | **Framework:** Laravel 12 + MySQL  
+**Tổng số bảng:** ~50 tables | **Foreign Keys:** ~80+ | **Audit Columns:** Applied to ~40 tables
 
-Quy ước: Mọi bảng nghiệp vụ có `id`, `created_at`, `updated_at`, `deleted_at`, `created_by`, `updated_by` (macro `auditColumns`).
+**Quy ước:** Mọi bảng nghiệp vụ có `id` (primary key), `created_at`, `updated_at`, `deleted_at` (soft delete), `created_by`, `updated_by` (audit columns via `HasAuditColumns` trait).
 
 ---
 

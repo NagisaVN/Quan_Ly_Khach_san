@@ -27,9 +27,10 @@ class DashboardService
         return [
             'available_rooms' => (clone $roomQ)->where('status', RoomStatus::Available->value)->count(),
             'total_rooms' => (clone $roomQ)->where('is_active', true)->count(),
-            'check_ins_today' => (clone $bookQ)->whereDate('actual_check_in_at', today())->count(),
-            'check_outs_today' => (clone $bookQ)->whereDate('actual_check_out_at', today())->count(),
-            'revenue_today' => (float) (clone $payQ)->whereDate('paid_at', today())->sum('amount'),
+            'check_ins_today' => (clone $bookQ)->whereDate('check_in_date', today())->where('status', '!=', BookingStatus::Cancelled->value)->count(),
+            'check_outs_today' => (clone $bookQ)->whereDate('check_out_date', today())->where('status', '!=', BookingStatus::Cancelled->value)->count(),
+            'revenue_today' => (float) (clone $payQ)->whereDate('paid_at', today())->where('status', 'completed')->sum('amount'),
+            'revenue_week' => (float) (clone $payQ)->whereBetween('paid_at', [today()->subDays(7), today()])->where('status', 'completed')->sum('amount'),
             'occupancy_rate' => $this->todayOccupancy($branchId),
         ];
     }
@@ -42,7 +43,7 @@ class DashboardService
         for ($i = 6; $i >= 0; $i--) {
             $date = Carbon::today()->subDays($i);
             $labels[] = $date->format('d/m');
-            $query = Payment::query()->whereDate('paid_at', $date);
+            $query = Payment::query()->whereDate('paid_at', $date)->where('status', 'completed');
             if ($branchId) {
                 $query->where('branch_id', $branchId);
             }

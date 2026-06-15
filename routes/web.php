@@ -49,6 +49,28 @@ Route::middleware(['auth', 'active', 'branch.context'])->group(function () {
     Route::post('branch/switch', [BranchSwitchController::class, 'switch'])->name('branch.switch');
     Route::get('dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    // Profile & Account Management Routes
+    Route::prefix('profile')->name('profile.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ProfileController::class, 'show'])->name('show');
+        Route::get('edit', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('edit');
+        Route::put('/', [\App\Http\Controllers\ProfileController::class, 'update'])->name('update');
+        Route::get('security', [\App\Http\Controllers\ProfileController::class, 'security'])->name('security');
+        Route::put('password', [\App\Http\Controllers\ProfileController::class, 'updatePassword'])->name('password.update');
+        Route::post('logout-others', [\App\Http\Controllers\ProfileController::class, 'logoutOtherSessions'])->name('logout-others');
+        Route::get('notifications', [\App\Http\Controllers\ProfileController::class, 'notifications'])->name('notifications');
+        Route::put('notifications', [\App\Http\Controllers\ProfileController::class, 'updateNotifications'])->name('notifications.update');
+        Route::get('login-history', [\App\Http\Controllers\ProfileController::class, 'loginHistory'])->name('login-history');
+        Route::delete('sessions/{sessionId}', [\App\Http\Controllers\ProfileController::class, 'logoutSession'])->name('sessions.logout');
+    });
+
+    // 2FA Routes
+    Route::prefix('2fa')->name('two-factor.')->group(function () {
+        Route::get('setup', [\App\Http\Controllers\Auth\TwoFactorAuthController::class, 'setup'])->name('setup');
+        Route::post('enable', [\App\Http\Controllers\Auth\TwoFactorAuthController::class, 'enable'])->name('enable');
+        Route::post('disable', [\App\Http\Controllers\Auth\TwoFactorAuthController::class, 'disable'])->name('disable');
+        Route::get('backup-codes', [\App\Http\Controllers\Auth\TwoFactorAuthController::class, 'backupCodes'])->name('backup-codes');
+    });
+
     Route::get('security/login-logs', [LoginLogController::class, 'index'])
         ->name('security.login-logs.index')
         ->middleware('permission:security.view');

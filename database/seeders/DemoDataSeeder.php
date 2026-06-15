@@ -3,12 +3,19 @@
 namespace Database\Seeders;
 
 use App\Enums\RoomStatus;
+use App\Enums\BookingStatus;
+use App\Enums\PaymentMethod;
 use App\Models\Amenity;
+use App\Models\Booking;
+use App\Models\BookingRoom;
 use App\Models\Branch;
 use App\Models\Company;
 use App\Models\Customer;
 use App\Models\Floor;
+use App\Models\Invoice;
+use App\Models\InvoiceItem;
 use App\Models\LoyaltyTier;
+use App\Models\Payment;
 use App\Models\Room;
 use App\Models\RoomType;
 use App\Models\User;
@@ -154,6 +161,9 @@ class DemoDataSeeder extends Seeder
             'loyalty_points' => 1500,
             'is_active' => true,
         ]);
+
+        // Create sample bookings and payments
+        $this->createSampleBookings($company, $branchHcm, $standardType, $deluxeType);
     }
 
     private function seedBranchRooms(
@@ -184,6 +194,178 @@ class DemoDataSeeder extends Seeder
                 ]);
 
                 $room->amenities()->sync(collect($amenities)->pluck('id'));
+            }
+        }
+    }
+
+    private function createSampleBookings(
+        Company $company,
+        Branch $branch,
+        RoomType $standardType,
+        RoomType $deluxeType
+    ): void {
+        $customer = Customer::where('email', 'customer@demo.vn')->first();
+        $receiptionist = User::where('email', 'letan.hcm@demo.vn')->first();
+        
+        // Booking 1: Today check-in (status: confirmed)
+        $booking1 = Booking::create([
+            'branch_id' => $branch->id,
+            'customer_id' => $customer->id,
+            'booking_code' => 'BK001',
+            'check_in_date' => now()->toDateString(),
+            'check_out_date' => now()->addDays(2)->toDateString(),
+            'status' => BookingStatus::Confirmed->value,
+            'adults' => 2,
+            'children' => 0,
+            'total_amount' => 1600000,
+            'special_requests' => 'Khách đặt sớm',
+            'created_by' => $receiptionist->id,
+        ]);
+
+        // Assign room to booking
+        $room = Room::where('branch_id', $branch->id)->first();
+        BookingRoom::create([
+            'booking_id' => $booking1->id,
+            'room_id' => $room->id,
+            'room_type_id' => $standardType->id,
+            'check_in_date' => $booking1->check_in_date,
+            'check_out_date' => $booking1->check_out_date,
+            'rate_snapshot' => 800000,
+            'total_amount' => 1600000,
+            'nights' => 2,
+        ]);
+
+        // Create invoice for booking 1
+        $invoice1 = Invoice::create([
+            'branch_id' => $branch->id,
+            'booking_id' => $booking1->id,
+            'customer_id' => $customer->id,
+            'invoice_number' => 'INV001',
+            'issue_date' => now()->toDateString(),
+            'due_date' => now()->addDays(1)->toDateString(),
+            'subtotal' => 1600000,
+            'tax_amount' => 160000,
+            'total_amount' => 1760000,
+            'status' => 'draft',
+        ]);
+
+        InvoiceItem::create([
+            'invoice_id' => $invoice1->id,
+            'item_type' => 'room',
+            'reference_id' => $room->id,
+            'description' => 'Standard Room - 2 nights',
+            'quantity' => 2,
+            'unit_price' => 800000,
+            'total_amount' => 1600000,
+        ]);
+
+        // Create payment for invoice 1 (today)
+        Payment::create([
+            'invoice_id' => $invoice1->id,
+            'branch_id' => $branch->id,
+            'amount' => 1760000,
+            'payment_method' => PaymentMethod::Bank->value,
+            'paid_at' => now(),
+            'status' => 'completed',
+            'reference' => 'PAY001',
+            'payment_number' => 'PAY001',
+        ]);
+
+        // Booking 2: Tomorrow check-in (status: pending)
+        $booking2 = Booking::create([
+            'branch_id' => $branch->id,
+            'customer_id' => $customer->id,
+            'booking_code' => 'BK002',
+            'check_in_date' => now()->addDay()->toDateString(),
+            'check_out_date' => now()->addDays(4)->toDateString(),
+            'status' => BookingStatus::Pending->value,
+            'adults' => 2,
+            'children' => 1,
+            'total_amount' => 3600000,
+            'special_requests' => 'Đặt qua điện thoại',
+            'created_by' => $receiptionist->id,
+        ]);
+
+        // Assign room to booking 2
+        $room2 = Room::where('branch_id', $branch->id)->skip(1)->first();
+        BookingRoom::create([
+            'booking_id' => $booking2->id,
+            'room_id' => $room2->id,
+            'room_type_id' => $deluxeType->id,
+            'check_in_date' => $booking2->check_in_date,
+            'check_out_date' => $booking2->check_out_date,
+            'rate_snapshot' => 1200000,
+            'total_amount' => 3600000,
+            'nights' => 3,
+        ]);
+
+        // Booking 3: Past booking checked out (status: checked-out)
+        $booking3 = Booking::create([
+            'branch_id' => $branch->id,
+            'customer_id' => $customer->id,
+            'booking_code' => 'BK003',
+            'check_in_date' => now()->subDays(3)->toDateString(),
+            'check_out_date' => now()->subDay()->toDateString(),
+            'status' => BookingStatus::CheckedOut->value,
+            'adults' => 2,
+            'children' => 0,
+            'total_amount' => 2400000,
+            'special_requests' => 'Khách cũ',
+            'created_by' => $receiptionist->id,
+        ]);
+
+        // Create invoice and payment for booking 3
+        $invoice3 = Invoice::create([
+            'branch_id' => $branch->id,
+            'booking_id' => $booking3->id,
+            'customer_id' => $customer->id,
+            'invoice_number' => 'INV003',
+            'issue_date' => now()->subDays(3)->toDateString(),
+            'due_date' => now()->subDays(2)->toDateString(),
+            'subtotal' => 2400000,
+            'tax_amount' => 240000,
+            'total_amount' => 2640000,
+            'status' => 'paid',
+        ]);
+
+        Payment::create([
+            'invoice_id' => $invoice3->id,
+            'branch_id' => $branch->id,
+            'amount' => 2640000,
+            'payment_method' => PaymentMethod::Bank->value,
+            'paid_at' => now()->subDay(),
+            'status' => 'completed',
+            'reference' => 'PAY003',
+            'payment_number' => 'PAY003',
+        ]);
+
+        // Create additional payments for the week (revenue trend data)
+        for ($i = 1; $i <= 5; $i++) {
+            $paymentDate = now()->subDays($i);
+            // Skip weekends for more realistic data
+            if ($paymentDate->dayOfWeek !== 0 && $paymentDate->dayOfWeek !== 6) {
+                // Create a simple invoice for standalone payments
+                $standaloneInvoice = Invoice::create([
+                    'branch_id' => $branch->id,
+                    'customer_id' => $customer->id,
+                    'invoice_number' => 'INV' . str_pad(100 + $i, 3, '0', STR_PAD_LEFT),
+                    'issue_date' => $paymentDate->toDateString(),
+                    'due_date' => $paymentDate->toDateString(),
+                    'total_amount' => rand(800000, 2000000),
+                    'subtotal' => rand(800000, 2000000),
+                    'status' => 'paid',
+                ]);
+
+                Payment::create([
+                    'invoice_id' => $standaloneInvoice->id,
+                    'branch_id' => $branch->id,
+                    'amount' => $standaloneInvoice->total_amount,
+                    'payment_method' => collect(PaymentMethod::cases())->random()->value,
+                    'paid_at' => $paymentDate,
+                    'status' => 'completed',
+                    'payment_number' => 'PAY' . str_pad(100 + $i, 3, '0', STR_PAD_LEFT),
+                    'reference' => 'PAY' . str_pad(100 + $i, 3, '0', STR_PAD_LEFT),
+                ]);
             }
         }
     }

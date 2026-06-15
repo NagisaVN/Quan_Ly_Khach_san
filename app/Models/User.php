@@ -67,6 +67,13 @@ class User extends Authenticatable
         return $this->hasOne(Customer::class);
     }
 
+    public function loginLogs()
+    {
+        return $this->hasMany(ActivityLog::class)
+            ->where('action', 'login')
+            ->orWhere('action', 'logout');
+    }
+
     public function isLocked(): bool
     {
         return $this->locked_until !== null && $this->locked_until->isFuture();
