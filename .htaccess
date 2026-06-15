@@ -1,0 +1,5 @@
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^$ quan_ly_khach_san/public/ [L,R=302]
+    RewriteRule ^quan_ly_khach_san/public/(.*)$ quan_ly_khach_san/public/$1 [L]
+</IfModule>
