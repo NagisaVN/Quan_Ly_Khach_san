@@ -3,82 +3,77 @@
 namespace App\Http\Controllers\Contracts;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreContractRequest;
+use App\Http\Requests\UpdateContractRequest;
 use App\Models\Contract;
+use App\Models\Supplier;
+use App\Services\ContractService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 
 class ContractController extends Controller
 {
+    public function __construct(private ContractService $service) {}
+
     public function index(Request $request): View
     {
-        abort_unless($request->user()->can('contracts.view'), 403);
-        $contracts = Contract::query()
-            ->where('company_id', auth()->user()->company_id)
-            ->orderByDesc('id')->paginate(15);
+        $this->authorize('viewAny', Contract::class);
+        $contracts = $this->service->paginate($request->only('search', 'status', 'supplier_id'));
 
         return view('contracts.index', compact('contracts'));
     }
 
     public function create(): View
     {
-        abort_unless(auth()->user()->can('contracts.create'), 403);
+        $this->authorize('create', Contract::class);
+        $suppliers = Supplier::where('is_active', true)->orderBy('name')->get();
 
-        return view('contracts.create');
+        return view('contracts.create', compact('suppliers'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreContractRequest $request): RedirectResponse
     {
-        abort_unless(auth()->user()->can('contracts.create'), 403);
-        $data = $request->validate([
-            'title' => 'required|string|max:255',
-            'start_date' => 'required|date',
-            'end_date' => 'nullable|date|after_or_equal:start_date',
-            'total_value' => 'nullable|numeric|min:0',
-            'description' => 'nullable|string',
-        ]);
+        $data = $request->validated();
         $data['company_id'] = auth()->user()->company_id;
         $data['branch_id'] = session('current_branch_id');
-        $data['contract_number'] = 'CT-'.strtoupper(Str::random(8));
-        $data['status'] = 'active';
-        $contract = Contract::create($data);
+        $contract = $this->service->create($data);
 
-        return redirect()->route('contracts.show', $contract)->with('success', 'Tạo hợp đồng');
+        return redirect()->route('contracts.show', $contract)
+            ->with('success', 'Tạo hợp đồng thành công.');
     }
 
     public function show(Contract $contract): View
     {
-        abort_unless(auth()->user()->can('contracts.view'), 403);
+        $this->authorize('view', $contract);
+        $contract->load('supplier');
 
         return view('contracts.show', compact('contract'));
     }
 
     public function edit(Contract $contract): View
     {
-        abort_unless(auth()->user()->can('contracts.update'), 403);
+        $this->authorize('update', $contract);
+        $suppliers = Supplier::where('is_active', true)->orderBy('name')->get();
 
-        return view('contracts.edit', compact('contract'));
+        return view('contracts.edit', compact('contract', 'suppliers'));
     }
 
-    public function update(Request $request, Contract $contract): RedirectResponse
+    public function update(UpdateContractRequest $request, Contract $contract): RedirectResponse
     {
-        abort_unless(auth()->user()->can('contracts.update'), 403);
-        $data = $request->validate([
-            'title' => 'required|string|max:255',
-            'status' => 'required|in:active,expired,cancelled',
-            'total_value' => 'nullable|numeric|min:0',
-        ]);
-        $contract->update($data);
+        $this->authorize('update', $contract);
+        $this->service->update($contract, $request->validated());
 
-        return redirect()->route('contracts.show', $contract)->with('success', 'Cập nhật hợp đồng');
+        return redirect()->route('contracts.show', $contract)
+            ->with('success', 'Cập nhật hợp đồng thành công.');
     }
 
     public function destroy(Contract $contract): RedirectResponse
     {
-        abort_unless(auth()->user()->can('contracts.delete'), 403);
-        $contract->delete();
+        $this->authorize('delete', $contract);
+        $this->service->delete($contract);
 
-        return redirect()->route('contracts.index')->with('success', 'Đã xóa');
+        return redirect()->route('contracts.index')
+            ->with('success', 'Xóa hợp đồng thành công.');
     }
 }

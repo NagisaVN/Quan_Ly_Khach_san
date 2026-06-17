@@ -71,7 +71,7 @@
                 <div class="card mb-3">
                     <div class="card-header"><h5 class="mb-0">Thêm dịch vụ</h5></div>
                     <div class="card-body">
-                        <form method="POST" action="{{ route('bookings.add-service', $booking) }}" class="row g-2">
+                        <form method="POST" action="{{ route('bookings.services', $booking) }}" class="row g-2">
                             @csrf
                             <div class="col-md-6">
                                 <select name="service_id" class="form-select" required>

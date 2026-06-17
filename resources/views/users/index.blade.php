@@ -50,7 +50,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="{{ count([Array]) + 1 }}" class="text-center text-muted">Chưa có dữ liệu</td></tr>
+                        <tr><td colspan="10" class="text-center text-muted">Chưa có dữ liệu</td></tr>
                     @endforelse
                 </tbody>
             </table>

@@ -26,7 +26,7 @@
                                     <td>{{ $rule->priority }}</td>
                                     <td>
                                         @can('pricing.delete')
-                                            <form method="POST" action="{{ route('pricing.rules.destroy', $rule) }}" class="d-inline">
+                                            <form method="POST" action="{{ route('pricing-rules.destroy', $rule) }}" class="d-inline">
                                                 @csrf @method('DELETE')
                                                 <button class="btn btn-sm btn-outline-danger">Xóa</button>
                                             </form>
@@ -59,7 +59,7 @@
                                     <td>{{ $rate->rate ? number_format($rate->rate, 0, ',', '.').' đ' : $rate->adjustment_percent.'%' }}</td>
                                     <td>
                                         @can('pricing.delete')
-                                            <form method="POST" action="{{ route('pricing.seasonal.destroy', $rate) }}" class="d-inline">
+                                            <form method="POST" action="{{ route('pricing-rules.seasonal.destroy', $rate) }}" class="d-inline">
                                                 @csrf @method('DELETE')
                                                 <button class="btn btn-sm btn-outline-danger">Xóa</button>
                                             </form>
@@ -81,7 +81,7 @@
                 <div class="card mb-3">
                     <div class="card-header"><h5 class="mb-0">Thêm quy tắc giá</h5></div>
                     <div class="card-body">
-                        <form method="POST" action="{{ route('pricing.rules.store') }}">
+                        <form method="POST" action="{{ route('pricing-rules.store') }}">
                             @csrf
                             <div class="mb-2">
                                 <input type="text" name="name" class="form-control" placeholder="Tên quy tắc" required>
@@ -127,7 +127,7 @@
                 <div class="card">
                     <div class="card-header"><h5 class="mb-0">Thêm giá theo mùa</h5></div>
                     <div class="card-body">
-                        <form method="POST" action="{{ route('pricing.seasonal.store') }}">
+                        <form method="POST" action="{{ route('pricing-rules.seasonal.store') }}">
                             @csrf
                             <div class="mb-2">
                                 <input type="text" name="name" class="form-control" placeholder="Tên mùa" required>

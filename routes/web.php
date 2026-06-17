@@ -86,9 +86,9 @@ Route::middleware(['auth', 'active', 'branch.context'])->group(function () {
         Route::resource('branches', BranchController::class)->middleware('permission:enterprise.view');
         Route::resource('departments', \App\Http\Controllers\Enterprise\DepartmentController::class)->middleware('permission:enterprise.view');
         Route::resource('suppliers', \App\Http\Controllers\Enterprise\SupplierController::class)->middleware('permission:enterprise.view');
-        Route::resource('bank-accounts', \App\Http\Controllers\Enterprise\BankAccountController::class)->middleware('permission:enterprise.view');
-        Route::resource('taxes', \App\Http\Controllers\Enterprise\TaxController::class)->middleware('permission:enterprise.view');
-        Route::resource('service-fees', \App\Http\Controllers\Enterprise\ServiceFeeController::class)->middleware('permission:enterprise.view');
+        Route::resource('bank-accounts', \App\Http\Controllers\Enterprise\BankAccountController::class)->except(['edit', 'update', 'destroy'])->middleware('permission:enterprise.view');
+        Route::resource('taxes', \App\Http\Controllers\Enterprise\TaxController::class)->except(['edit', 'update', 'destroy'])->middleware('permission:enterprise.view');
+        Route::resource('service-fees', \App\Http\Controllers\Enterprise\ServiceFeeController::class)->except(['edit', 'update', 'destroy'])->middleware('permission:enterprise.view');
     });
 
     Route::prefix('rooms')->name('rooms.')->group(function () {
@@ -123,7 +123,7 @@ Route::middleware(['auth', 'active', 'branch.context'])->group(function () {
         ->name('bookings.availability')
         ->middleware('permission:bookings.view');
 
-    Route::resource('bookings', BookingController::class)->middleware('permission:bookings.view');
+    Route::resource('bookings', BookingController::class)->except(['edit', 'update', 'destroy'])->middleware('permission:bookings.view');
     Route::post('bookings/{booking}/check-in', [BookingController::class, 'checkIn'])
         ->name('bookings.check-in')
         ->middleware('permission:bookings.update');

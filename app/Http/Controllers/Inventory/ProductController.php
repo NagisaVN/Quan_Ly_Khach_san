@@ -3,8 +3,12 @@
 namespace App\Http\Controllers\Inventory;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreProductRequest;
+use App\Http\Requests\UpdateProductRequest;
 use App\Models\Product;
 use App\Models\StockMovement;
+use App\Models\Supplier;
+use App\Services\ProductService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -12,67 +16,55 @@ use Illuminate\View\View;
 
 class ProductController extends Controller
 {
+    public function __construct(private ProductService $service) {}
+
     public function index(Request $request): View
     {
-        abort_unless($request->user()->can('inventory.view'), 403);
-        $products = Product::query()->where('branch_id', session('current_branch_id'))
-            ->when($request->search, fn ($q, $s) => $q->where('name', 'like', "%{$s}%")->orWhere('sku', 'like', "%{$s}%"))
-            ->orderBy('name')->paginate(15);
+        $this->authorize('viewAny', Product::class);
+
+        $products = $this->service->paginate($request->only('search'));
 
         return view('inventory.products.index', compact('products'));
     }
 
     public function create(): View
     {
-        abort_unless(auth()->user()->can('inventory.create'), 403);
+        $this->authorize('create', Product::class);
+        $suppliers = Supplier::where('is_active', true)->orderBy('name')->get();
 
-        return view('inventory.products.create');
+        return view('inventory.products.create', compact('suppliers'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreProductRequest $request): RedirectResponse
     {
-        abort_unless(auth()->user()->can('inventory.create'), 403);
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'sku' => 'required|string|max:50',
-            'unit' => 'nullable|string|max:20',
-            'cost_price' => 'nullable|numeric|min:0',
-            'selling_price' => 'nullable|numeric|min:0',
-            'stock_quantity' => 'nullable|integer|min:0',
-            'min_stock_level' => 'nullable|integer|min:0',
-        ]);
+        $data = $request->validated();
         $data['branch_id'] = session('current_branch_id');
-        $product = Product::create($data);
+        $product = $this->service->create($data);
 
-        return redirect()->route('inventory.products.show', $product)->with('success', 'Tạo sản phẩm thành công');
+        return redirect()->route('inventory.products.show', $product)
+            ->with('success', 'Tạo sản phẩm thành công.');
     }
 
     public function show(Product $product): View
     {
-        abort_unless(auth()->user()->can('inventory.view'), 403);
-        $product->load('stockMovements');
+        $this->authorize('view', $product);
+        $product->load(['stockMovements', 'supplier']);
 
         return view('inventory.products.show', compact('product'));
     }
 
     public function edit(Product $product): View
     {
-        abort_unless(auth()->user()->can('inventory.update'), 403);
+        $this->authorize('update', $product);
+        $suppliers = Supplier::where('is_active', true)->orderBy('name')->get();
 
-        return view('inventory.products.edit', compact('product'));
+        return view('inventory.products.edit', compact('product', 'suppliers'));
     }
 
-    public function update(Request $request, Product $product): RedirectResponse
+    public function update(UpdateProductRequest $request, Product $product): RedirectResponse
     {
-        abort_unless(auth()->user()->can('inventory.update'), 403);
-        $data = $request->validate([
-            'name' => 'required|string|max:255',
-            'selling_price' => 'nullable|numeric|min:0',
-            'stock_adjustment' => 'nullable|integer',
-            'min_stock_level' => 'nullable|integer|min:0',
-            'is_active' => 'boolean',
-        ]);
-
+        $data = $request->validated();
+        
         DB::transaction(function () use ($product, $data) {
             if (isset($data['stock_adjustment']) && $data['stock_adjustment'] != 0) {
                 $before = $product->stock_quantity;
@@ -89,17 +81,19 @@ class ProductController extends Controller
                 $product->stock_quantity = $after;
             }
             unset($data['stock_adjustment']);
-            $product->update($data);
+            $this->service->update($product, $data);
         });
 
-        return redirect()->route('inventory.products.show', $product)->with('success', 'Cập nhật kho');
+        return redirect()->route('inventory.products.show', $product)
+            ->with('success', 'Cập nhật sản phẩm thành công.');
     }
 
     public function destroy(Product $product): RedirectResponse
     {
-        abort_unless(auth()->user()->can('inventory.delete'), 403);
-        $product->delete();
+        $this->authorize('delete', $product);
+        $this->service->delete($product);
 
-        return redirect()->route('inventory.products.index')->with('success', 'Đã xóa');
+        return redirect()->route('inventory.products.index')
+            ->with('success', 'Xóa sản phẩm thành công.');
     }
 }

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi" data-bs-theme="light">
 <head>
     <meta charset="utf-8">
@@ -171,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (typeof $ !== 'undefined' && $.fn.DataTable) {
         $('.datatable').each(function () {
             if (!$.fn.DataTable.isDataTable(this)) {
-                $(this).DataTable({ language: { url: '//cdn.datatables.net/plug-ins/2.0.8/i18n/vi.json' }, responsive: true });
+                $(this).DataTable({ language: { url: 'https://cdn.datatables.net/plug-ins/2.0.8/i18n/vi.json' }, responsive: true });
             }
         });
     }

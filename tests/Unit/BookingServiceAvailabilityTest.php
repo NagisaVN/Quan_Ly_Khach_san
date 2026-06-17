@@ -110,16 +110,16 @@ class BookingServiceAvailabilityTest extends TestCase
 
     public function test_weekend_pricing_increases_rate(): void
     {
-        Carbon::setTestNow('2026-06-14'); // Saturday
+        Carbon::setTestNow('2026-06-14'); // Sunday
 
         $pricing = app(\App\Services\PricingService::class);
-        $result = $pricing->calculateNightlyRate(
+        $rate = $pricing->calculateNightlyRate(
             $this->roomType->id,
             $this->branch->id,
             Carbon::parse('2026-06-14'),
             $this->customer->id
         );
 
-        $this->assertGreaterThan($result['base_rate'], $result['final_rate']);
+        $this->assertGreaterThan((float) $this->roomType->base_price, $rate);
     }
 }
