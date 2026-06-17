@@ -1,58 +1,205 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Hotel Management System — Tài liệu Dự án
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+**Hệ thống Quản lý Khách sạn** — Đồ án tốt nghiệp  
+**Tech stack:** Laravel 13, PHP 8.3+, MySQL, AdminLTE 4, Blade
 
-## About Laravel
+---
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Cấu trúc tài liệu
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+| Giai đoạn | Thư mục / File | Nội dung |
+|-----------|----------------|----------|
+| **1** | [phase-1/](./phase-1/) | Phân tích yêu cầu, Use Case, Functional Spec |
+| **2** | [phase-2/](./phase-2/) | ERD, Migrations, Seeders |
+| **Kiến trúc** | [architecture.md](./architecture.md) | Layers, modules, business rules |
+| **API** | [api-reference.md](./api-reference.md) | Endpoints booking, payment, reports, portal |
+| **Deploy** | [deployment.md](./deployment.md) | Checklist cài đặt Laragon/production |
+| UML | [uml/](./uml/) | Use Case, Activity, Sequence diagrams |
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## Giai đoạn 1 — Hoàn thành ✅
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+| Tài liệu | Mô tả |
+|----------|--------|
+| [01-requirements-analysis.md](./phase-1/01-requirements-analysis.md) | Phân tích 15 module, actors, business rules, NFR |
+| [02-use-case-specification.md](./phase-1/02-use-case-specification.md) | 92 Use Cases chi tiết |
+| [03-functional-specification.md](./phase-1/03-functional-specification.md) | Input/Output/Validation/API cho chức năng core |
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+---
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+## Giai đoạn 2 — Hoàn thành ✅
 
-## Agentic Development
+| Hạng mục | Chi tiết |
+|----------|----------|
+| [erd.md](./phase-2/erd.md) | ERD đầy đủ ~50 bảng |
+| Migrations | 10 file migration + Spatie + Sanctum |
+| Seeders | 120 permissions, 6 roles, demo data |
+| Models | Company, Branch, Room, Booking, Invoice... |
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+---
 
-```bash
-composer require laravel/boost --dev
+## Giai đoạn 3 — Hoàn thành ✅
 
-php artisan boost:install
+| Hạng mục | Chi tiết |
+|----------|----------|
+| AuthService | Đăng nhập, khóa tài khoản, 2FA, logout |
+| Middleware | `active`, `permission`, `branch.context` |
+| Views | AdminLTE 4: login, dashboard, security |
+| Tests | Feature test đăng nhập |
+
+---
+
+## Giai đoạn 4 — AdminLTE Layout + Dashboard ✅
+
+| Hạng mục | Chi tiết |
+|----------|----------|
+| [layout-dashboard.md](./phase-4/layout-dashboard.md) | Tài liệu giai đoạn 4 |
+| MenuService | Sidebar động theo permission + treeview |
+| DashboardService | KPI thực từ DB + Chart.js |
+| Layout | Branch switcher, dark mode, breadcrumb |
+| Components | card, alert, breadcrumb, skeleton, modal, datatable |
+
+---
+
+## Giai đoạn 5 — CRUD Modules ✅
+
+| Module | Controllers |
+|--------|-------------|
+| Enterprise | Company, Branch |
+| Phòng | RoomType, Floor, Room, Amenity |
+| Khách hàng | Customer |
+| Dịch vụ | ServiceCategory, Service |
+| Hệ thống | User |
+
+---
+
+## Giai đoạn 6 — Booking (Core Business) ✅
+
+| Hạng mục | Chi tiết |
+|----------|----------|
+| BookingService | availability, create, check-in/out, cancel, extend, change room |
+| PricingService | calculateNightlyRate, calculateBookingTotal (snapshot) |
+| BookingRepository | overlap query BR-11, pagination |
+| BookingController | resource + AJAX availability |
+| BookingPolicy | branch scope + RBAC |
+| Views | bookings/index, create, show |
+| Exceptions | RoomNotAvailable, RoomMaintenance, PaymentRequired |
+
+---
+
+## Giai đoạn 7 — Payment ✅
+
+| Hạng mục | Chi tiết |
+|----------|----------|
+| InvoiceService | generateFromBooking, recalculate totals |
+| PaymentService | processPayment DB transaction BR-15 |
+| Adapters | MockVnPayAdapter, MockMomoAdapter |
+| Controllers | InvoiceController, PaymentController |
+| Views | invoices/show, payments/create, invoices/pdf (DomPDF) |
+
+---
+
+## Giai đoạn 8 — Dynamic Pricing ✅
+
+| Hạng mục | Chi tiết |
+|----------|----------|
+| PricingService | Full rule engine: season, weekend, holiday, occupancy, loyalty |
+| PricingRuleController | CRUD pricing_rules, seasonal_rates |
+| View | pricing/index |
+
+---
+
+## Giai đoạn 9 — Reports ✅
+
+| Hạng mục | Chi tiết |
+|----------|----------|
+| ReportService | revenue, occupancy, top services, customers |
+| ReportController | Chart.js dashboard + export |
+| RevenueExport | Laravel Excel |
+| PDF export | DomPDF |
+
+---
+
+## Giai đoạn 10 — Tests + Docs ✅
+
+| Hạng mục | Chi tiết |
+|----------|----------|
+| BookingFlowTest | create → check-in → payment → check-out |
+| BookingServiceAvailabilityTest | overlap, maintenance, weekend pricing |
+| architecture.md | Kiến trúc hệ thống |
+| api-reference.md | API endpoints tóm tắt |
+
+---
+
+## Lộ trình triển khai
+
+```
+Giai đoạn 1   Phân tích + UML           [DONE]
+Giai đoạn 2   ERD + Migration           [DONE]
+Giai đoạn 3   Auth + RBAC               [DONE]
+Giai đoạn 4   AdminLTE + Dashboard      [DONE]
+Giai đoạn 5   CRUD modules              [DONE]
+Giai đoạn 6   Booking                   [DONE]
+Giai đoạn 7   Payment                   [DONE]
+Giai đoạn 8   Dynamic Pricing           [DONE]
+Giai đoạn 9   Reports                   [DONE]
+Giai đoạn 10  Test + Documentation      [DONE]
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+---
 
-## Contributing
+## Kiến trúc
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```
+Controller → Service → Repository → Model → Database
+UI: AdminLTE 4 + Blade + Bootstrap 5.3 + Chart.js
+Auth: Session + Sanctum (AJAX)
+RBAC: Spatie Permission (6 roles × 8 actions)
+Payment: Adapter pattern (mock VNPay/Momo)
+```
 
-## Code of Conduct
+Chi tiết: [architecture.md](./architecture.md)
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+---
 
-## Security Vulnerabilities
+## Business Rules cốt lõi
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- **BR-11:** Không đặt trùng phòng
+- **BR-12:** Không check-in phòng bảo trì
+- **BR-13:** Không check-out chưa thanh toán
+- **BR-14/15/16:** DB Transaction cho Check-in, Payment, Check-out
 
-## License
+---
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Cài đặt & Truy cập
+
+```bash
+cd d:\laragon\www\Quan_Ly_Khach_San
+composer install
+npm install && npm run build
+cp .env.example .env
+php artisan key:generate
+php artisan migrate:fresh --seed
+php artisan serve
+```
+
+### URL truy cập (Laragon)
+
+| Cách | URL đăng nhập |
+|------|----------------|
+| **Khuyến nghị** (sau khi Restart Laragon) | http://quan-ly-khach-san.test/login |
+| Localhost (đường dẫn đầy đủ) | http://localhost/Quan_Ly_Khach_San/public/login |
+| Portal khách hàng | http://quan-ly-khach-san.test/portal |
+| Artisan serve | http://127.0.0.1:8000/login |
+
+> **Lưu ý:** Không dùng URL `localhost/quan_ly_khach_san/quan_ly_khach_san/...` (sai chữ hoa/thường → 404).  
+> Sau khi sửa vhost, vào Laragon → **Stop All** → **Start All** để kích hoạt `quan-ly-khach-san.test`.
+
+### Tài khoản demo (password: `password`)
+
+| Email | Vai trò |
+|-------|---------|
+| superadmin@demo.vn | Super Admin |
+| letan.hcm@demo.vn | Lễ tân (booking + payment) |
+| customer@demo.vn | Khách hàng (Portal) |
